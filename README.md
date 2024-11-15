@@ -1,7 +1,7 @@
 # E-commerce RAG demo
 
 This demo showcases an example about how to build a pipeline to keep a vector DB up to date and use it to always build a prompt with fresh data from an e-commerce shop.  
-![architecture](./architecture.png)
+![architecture](./architecture.jpg)
 
 ![Demo](demo.gif)
 
