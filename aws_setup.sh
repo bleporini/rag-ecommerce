@@ -99,7 +99,7 @@ check_shop () {
 wait_for check_shop "Shop"
 
 cd terraform
-terraform init 
+terraform init
 terraform apply -auto-approve
 
 cd ..
