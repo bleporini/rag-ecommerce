@@ -1,0 +1,8 @@
+langchain
+langchain_community
+langchain-openai
+confluent-kafka
+fastavro
+chromadb
+langchain-chroma
+langserve[all]
