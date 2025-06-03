@@ -17,7 +17,7 @@ resource "confluent_environment" "ecommerce" {
   display_name = "ecommerce_${random_id.id.id}"
 
   stream_governance {
-    package = "ESSENTIALS"
+    package = "ADVANCED"
   }
 }
 
@@ -272,7 +272,45 @@ CREATE TABLE products (
   `description` string,
   `description_short` string,
   CONSTRAINT `PRIMARY` PRIMARY KEY (`key`) NOT ENFORCED
+)with(
+    'kafka.consumer.isolation-level' = 'read-uncommitted'
 );
+EOT
+  properties = {
+    "sql.current-catalog"  = confluent_environment.ecommerce.display_name
+    "sql.current-database" = confluent_kafka_cluster.basic.display_name
+  }
+  rest_endpoint   = data.confluent_flink_region.region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  depends_on = [
+    confluent_flink_compute_pool.main,
+    confluent_connector.source,
+    confluent_role_binding.app-manager-assigner,
+    confluent_role_binding.app-manager-flink-developer
+  ]
+}
+resource "confluent_flink_statement" "alter_ps_category_lang" {
+  for_each = toset(["ps_category_lang", "ps_category_product", "ps_product_lang", "ps_product"])
+
+  compute_pool {
+    id = confluent_flink_compute_pool.main.id
+  }
+  principal {
+    id = confluent_service_account.statements-runner.id
+  }
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.ecommerce.id
+  }
+
+  statement  = <<-EOT
+  alter  table `fa560f9da14.prestashop.${each.value}` SET ('value.format'='json-registry');
 EOT
   properties = {
     "sql.current-catalog"  = confluent_environment.ecommerce.display_name

@@ -3,7 +3,7 @@ services:
     build:
       dockerfile_inline: |
         FROM python:3.12
-        RUN pip install chromadb
+        RUN pip install chromadb==1.0.4
         CMD ["chroma", "run", "--path", "/db", "--host", "0.0.0.0"]
         EXPOSE 8000
     ports:

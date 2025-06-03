@@ -10,6 +10,8 @@ from confluent_kafka.schema_registry.avro import AvroDeserializer
 from confluent_kafka.serialization import SerializationContext, MessageField
 from langchain_openai import OpenAIEmbeddings
 
+import sys
+
 
 def read_config(file):
     # reads the client configuration from client.properties
@@ -21,6 +23,8 @@ def read_config(file):
             if len(line) != 0 and line[0] != "#":
                 parameter, value = line.strip().split('=', 1)
                 config[parameter] = value.strip()
+    print(config)
+    sys.stdout.flush()
     return config
 
 
@@ -45,6 +49,7 @@ def consume(topic, config, sr_config, record_consumer):
                 key=avro_deserializer(msg.key(), SerializationContext(msg.topic(), MessageField.KEY))
                 print(key)
                 print(a)
+                sys.stdout.flush()
                 record_consumer(str(key['key']),a)
     except KeyboardInterrupt:
         pass
@@ -53,7 +58,7 @@ def consume(topic, config, sr_config, record_consumer):
         consumer.close()
 
 def db(embeddings):
-#    chroma_client = chromadb.Client()
+    #    chroma_client = chromadb.Client()
     chroma_client = chromadb.HttpClient(host=os.environ['CHROMA_HOST'], port=8000)
 
     collection: Collection = chroma_client.create_collection(name="products", embedding_function=embeddings, get_or_create=True)

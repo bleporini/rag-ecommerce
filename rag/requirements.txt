@@ -1,9 +1,9 @@
 httpx == 0.27.2
-langchain
+langchain==0.3.24
 langchain_community
 langchain-openai
 confluent-kafka == 2.8.0
 fastavro
-chromadb
-langchain-chroma
+chromadb == 0.6.3
+langchain-chroma==0.2.3
 langserve[all]
