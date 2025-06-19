@@ -4,10 +4,12 @@ services:
       dockerfile_inline: |
         FROM alpine
 
-        ADD ./post-init.sh /tmp/init-scripts/post-init.sh
+        ADD ./${INIT_DIR}post-init.sh /tmp/init-scripts/post-init.sh
         VOLUME /tmp/init-scripts
   mysql:
     image: mysql:5.7
+#    image: liupeng0518/mysql:5.7-arm64
+#    image: mysql:9.3
     container_name: mysql
     ports:
       - 3306:3306
@@ -19,6 +21,7 @@ services:
     command: --server-id=1 --log-bin=mysql-bin --binlog-format=row --binlog-row-image=full
   shop:
     image: prestashop/prestashop:1.7
+#    image: prestashop/prestashop:8.1-apache
     container_name: shop
     environment:
       DB_SERVER: mysql
@@ -28,5 +31,19 @@ services:
       PS_DOMAIN: $VM_PUBLIC_IP
     volumes_from:
       - data
+    depends_on:
+      - mysql
     ports:
-      - 80:80
+      - 81:80
+
+  nginx:
+      image: nginx:latest
+      container_name: nginx
+      ports:
+        - 80:80
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf
+        - ./chat-assets:/usr/share/nginx/html/chat
+      depends_on:
+        - shop
+        - api

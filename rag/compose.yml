@@ -44,6 +44,7 @@ services:
         CMD ["/bin/sh" , "-c", "sleep 5 ; python api.py"]
     depends_on:
       - chroma
+    container_name: api
     ports:
       - 8001:8001
     environment:

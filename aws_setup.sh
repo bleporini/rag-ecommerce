@@ -77,6 +77,8 @@ scp $ssh_options rag/requirements.txt ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/compose.yml ec2-user@$vm_pub_ip:~/compose_rag.yml
 scp $ssh_options ps_sample_compose.yml ec2-user@$vm_pub_ip:~/
 scp $ssh_options init-scripts/post-init.sh ec2-user@$vm_pub_ip:~/
+scp $ssh_options -r chat-assets ec2-user@$vm_pub_ip:~/
+scp $ssh_options -r nginx.conf ec2-user@$vm_pub_ip:~/
 
 check_docker() {
   ssh $ssh_options ec2-user@$vm_pub_ip docker ps
@@ -87,13 +89,13 @@ wait_for check_docker "Docker"
 
 ssh $ssh_options ec2-user@$vm_pub_ip docker run -d \
 	--name compose \
-	-v \$PWD:/work  \
-	--workdir /work \
+	-v \$PWD:\$PWD  \
+	--workdir \$PWD \
        	-v /var/run/docker.sock:/var/run/docker.sock \
-       	docker compose -f ps_sample_compose.yml up -d
+       	docker compose -f ps_sample_compose.yml -f compose_rag.yml up  shop -d
 
 check_shop () {
-	curl --fail --max-time 10 $vm_pub_ip
+	curl --fail --max-time 10 $vm_pub_ip:81
 }
 
 wait_for check_shop "Shop"
@@ -109,10 +111,10 @@ scp $ssh_options etc/sr.properties ec2-user@$vm_pub_ip:~/
 
 ssh $ssh_options ec2-user@$vm_pub_ip docker run -d \
 	--name compose_rag \
-	-v \$PWD:/work  \
-	--workdir /work \
+	-v \$PWD:\$PWD  \
+	--workdir \$PWD \
        	-v /var/run/docker.sock:/var/run/docker.sock \
-       	docker compose -f compose_rag.yml up -d
+       	docker compose -f ps_sample_compose.yml -f compose_rag.yml up -d
 
 echo Now you can visit the shop at http://$vm_pub_ip 
 cd terraform
