@@ -1,11 +1,4 @@
 services:
-  data:
-    build:
-      dockerfile_inline: |
-        FROM alpine
-
-        ADD ./${INIT_DIR}post-init.sh /tmp/init-scripts/post-init.sh
-        VOLUME /tmp/init-scripts
   mysql:
     image: mysql:5.7
 #    image: liupeng0518/mysql:5.7-arm64
@@ -29,8 +22,8 @@ services:
       DB_PASSWD: $MYSQL_PASSWORD
       PS_INSTALL_AUTO: 1
       PS_DOMAIN: $VM_PUBLIC_IP
-    volumes_from:
-      - data
+    volumes:
+      - ./post-init.sh:/tmp/init-scripts/post-init.sh
     depends_on:
       - mysql
     ports:

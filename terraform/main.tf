@@ -34,6 +34,7 @@ resource "aws_key_pair" "pub_key" {
 data "aws_ami" "amzn_lnx" {
   name_regex = "amzn2-ami-kernel-5.10*"
   most_recent = true
+  owners = ["amazon"]
 
   filter {
     name   = "virtualization-type"
