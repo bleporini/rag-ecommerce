@@ -16,6 +16,9 @@ export CONFLUENT_CLOUD_API_KEY
 export CONFLUENT_CLOUD_API_SECRET
 export CONFLUENT_CLOUD_REGION
 export CONFLUENT_CLOUD_PROVIDER
+export MONGODB_ATLAS_PUBLIC_KEY
+export MONGODB_ATLAS_PRIVATE_KEY
+export MONGODB_ORG_ID
 
 cat <<EOF > terraform/terraform.tfvars
 aws_profile="$AWS_PROFILE"
@@ -28,6 +31,9 @@ region="$AWS_REGION"
 cloud="$CONFLUENT_CLOUD_PROVIDER"
 db_password="$MYSQL_PASSWORD"
 open_api_key="$OPENAI_API_KEY"
+mongodb_atlas_public_key ="$MONGODB_ATLAS_PUBLIC_KEY"
+mongodb_atlas_private_key="$MONGODB_ATLAS_PRIVATE_KEY"
+mongodb_org_id           ="$MONGODB_ORG_ID"
 EOF
 
 
@@ -73,11 +79,13 @@ wait_for check_ssh "SSH"
 scp $ssh_options etc/.env ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/indexer.py ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/api.py ec2-user@$vm_pub_ip:~/
+scp $ssh_options rag/chat_api.py ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/requirements.txt ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/compose.yml ec2-user@$vm_pub_ip:~/compose_rag.yml
 scp $ssh_options ps_sample_compose.yml ec2-user@$vm_pub_ip:~/
 scp $ssh_options init-scripts/post-init.sh ec2-user@$vm_pub_ip:~/
 scp $ssh_options -r chat-assets ec2-user@$vm_pub_ip:~/
+scp $ssh_options -r chat2 ec2-user@$vm_pub_ip:~/
 scp $ssh_options -r nginx.conf ec2-user@$vm_pub_ip:~/
 
 check_docker() {

@@ -75,7 +75,22 @@ SHOP_BASE_URL=http://${aws_instance.bastion.public_ip}/
 EOT
 }
 
-
+resource "local_file" "flink_shell" {
+	filename = "${path.cwd}/../flink.sh"
+	file_permission = "0755"
+	content = <<-EOT
+#!/usr/bin/env bash
+confluent flink shell --compute-pool ${confluent_flink_compute_pool.main.id} --environment ${confluent_environment.ecommerce.id}
+EOT
+}
+resource "local_file" "vm_ssh" {
+	filename = "${path.cwd}/../ec2.sh"
+	file_permission = "0755"
+	content = <<-EOT
+#!/usr/bin/env bash
+ssh ec2-user@${aws_instance.bastion.public_ip}
+EOT
+}
 
 output "cluster"{
 	value = confluent_kafka_cluster.basic.bootstrap_endpoint

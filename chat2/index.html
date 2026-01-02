@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSE Chat Test</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; max-width: 600px; margin: auto; padding: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; margin-top: 10px; height: 300px; overflow-y: scroll; background: #f9f9f9; }
+        .message { margin-bottom: 5px; padding: 5px; border-radius: 5px; }
+        .question { background-color: #e1f5fe; text-align: right; }
+        .answer { background-color: #dcedc8; }
+        #controls { display: flex; margin-top: 10px; }
+        #textInput { flex-grow: 1; padding: 8px; }
+        button { padding: 8px 12px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>SSE Chat Test</h1>
+    <p>Discussion ID: <span id="discussionId"></span></p>
+    <div id="messages"></div>
+    <div id="controls">
+        <input type="text" id="textInput" placeholder="Type your message...">
+        <button id="sendButton">Send</button>
+    </div>
+
+    <script src="./app.js"></script>
+</body>
+</html>

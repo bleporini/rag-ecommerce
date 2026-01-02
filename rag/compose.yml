@@ -51,3 +51,23 @@ services:
       CHROMA_HOST: chroma
       OPENAI_API_KEY: $OPENAI_API_KEY
 
+  api-chat2:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12
+        WORKDIR /work
+        COPY requirements.txt .
+        RUN pip install --no-cache-dir -r requirements.txt
+        COPY . .
+        CMD ["/bin/sh", "-c", "find . -name '*.pyc' -delete && uvicorn chat_api:app --host 0.0.0.0 --port 8000"]
+    container_name: api-chat2
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./client.properties:/work/client.properties
+      - ./sr.properties:/work/sr.properties
+      - ./chat_api.py:/work/chat_api.py
+    environment:
+      CUSTOMER_QUESTIONS_TOPIC: 'customer_conversations'
+

@@ -49,6 +49,22 @@ variable "open_api_key" {
   type        = string
 }
 
+variable "mongodb_atlas_public_key" {
+  type        = string
+  description = "Your MongoDB Atlas public API key."
+  sensitive   = true
+}
+
+variable "mongodb_atlas_private_key" {
+  type        = string
+  description = "Your MongoDB Atlas private API key."
+  sensitive   = true
+}
+
+variable "mongodb_org_id" {
+  type        = string
+  description = "The ID of your MongoDB Atlas organization."
+}
 
 
 

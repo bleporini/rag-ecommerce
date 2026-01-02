@@ -7,3 +7,4 @@ fastavro
 chromadb == 0.6.3
 langchain-chroma==0.2.3
 langserve[all]
+sse-starlette

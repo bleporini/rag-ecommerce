@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12
+        WORKDIR /work
+        COPY requirements.txt .
+        RUN pip install --no-cache-dir -r requirements.txt
+        COPY . .
+        CMD ["/bin/sh", "-c", "find . -name '*.pyc' -delete && uvicorn chat_api:app --host 0.0.0.0 --port 8000"]
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./client.properties:/work/client.properties
+      - ./sr.properties:/work/sr.properties
+      - ./chat_api.py:/work/chat_api.py
+    environment:
+      CUSTOMER_QUESTIONS_TOPIC: 'customer_conversations'
+
+  nginx:
+    image: nginx:1.25
+    volumes:
+      - ./dev/index.html:/usr/share/nginx/html/index.html
+      - ./dev/app.js:/usr/share/nginx/html/app.js
+      - ./dev/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+

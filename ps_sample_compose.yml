@@ -37,6 +37,7 @@ services:
       volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf
         - ./chat-assets:/usr/share/nginx/html/chat
+        - ./chat2:/usr/share/nginx/html/chat2
       depends_on:
         - shop
         - api
