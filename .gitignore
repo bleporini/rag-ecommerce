@@ -330,4 +330,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,intellij+all,terraform,python
+# End of https://www.toptal.com/developers/gitignore/api/macos,intellij+all,terraform,pythonec2.sh
+etc
+flink.sh
+terraform/tmp
+ec2.sh

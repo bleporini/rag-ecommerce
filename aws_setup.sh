@@ -77,15 +77,12 @@ check_ssh () {
 wait_for check_ssh "SSH"
 
 scp $ssh_options etc/.env ec2-user@$vm_pub_ip:~/
-scp $ssh_options rag/indexer.py ec2-user@$vm_pub_ip:~/
-scp $ssh_options rag/api.py ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/chat_api.py ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/requirements.txt ec2-user@$vm_pub_ip:~/
 scp $ssh_options rag/compose.yml ec2-user@$vm_pub_ip:~/compose_rag.yml
 scp $ssh_options ps_sample_compose.yml ec2-user@$vm_pub_ip:~/
 scp $ssh_options init-scripts/post-init.sh ec2-user@$vm_pub_ip:~/
 scp $ssh_options -r chat-assets ec2-user@$vm_pub_ip:~/
-scp $ssh_options -r chat2 ec2-user@$vm_pub_ip:~/
 scp $ssh_options -r nginx.conf ec2-user@$vm_pub_ip:~/
 
 check_docker() {
@@ -95,7 +92,7 @@ check_docker() {
 wait_for check_docker "Docker"
 
 
-ssh $ssh_options ec2-user@$vm_pub_ip docker run -d \
+ssh $ssh_options ec2-user@$vm_pub_ip docker run \
 	--name compose \
 	-v \$PWD:\$PWD  \
 	--workdir \$PWD \
@@ -117,7 +114,7 @@ cd ..
 scp $ssh_options etc/client.properties ec2-user@$vm_pub_ip:~/
 scp $ssh_options etc/sr.properties ec2-user@$vm_pub_ip:~/
 
-ssh $ssh_options ec2-user@$vm_pub_ip docker run -d \
+ssh $ssh_options ec2-user@$vm_pub_ip docker run \
 	--name compose_rag \
 	-v \$PWD:\$PWD  \
 	--workdir \$PWD \
