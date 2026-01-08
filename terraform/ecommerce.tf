@@ -564,7 +564,7 @@ select
         cast (p.after.cache_default_attribute as string), '-' ,
         pl.after.link_rewrite , '.html' ),
     pl.after.description,
-    pl.after.description_short
+    pl.after.name || ': ' || pl.after.description_short
 from `fa560f9da14.prestashop.ps_product` p join `fa560f9da14.prestashop.ps_product_lang` pl on p.id_product = pl.id_product
 join `fa560f9da14.prestashop.ps_category_product` cp on pl.id_product=cp.id_product and p.after.id_category_default = cp.id_category
 join `fa560f9da14.prestashop.ps_category_lang` c on cp.id_category = c.id_category;
@@ -572,7 +572,9 @@ EOT
     ,
 <<-EOT
 insert into products_embedding
-SELECT _id, uri, available_for_order, description_short || ' ' || description, response AS description_embedding
+SELECT _id,
+  case when available_for_order then uri else '' end, available_for_order,
+  case when available_for_order then description_short || ' ' || description else '' end, response AS description_embedding
 FROM `products`,
     LATERAL TABLE(ML_PREDICT('`text-embedding-3-large`',description))
 where description IS NOT NULL and description <> '';
