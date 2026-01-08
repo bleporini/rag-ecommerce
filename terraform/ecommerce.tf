@@ -355,13 +355,16 @@ resource "confluent_flink_statement" "ddl1" {
   for_each  = toset([
     <<-EOT
 CREATE TABLE products (
-  `key` BIGINT NOT NULL,
+  `_id` BIGINT NOT NULL,
   `available_for_order` BOOLEAN,
   `uri` string,
   `description` string,
   `description_short` string
-)with(
-    'kafka.consumer.isolation-level' = 'read-uncommitted'
+)
+DISTRIBUTED by (_id)
+with(
+    'kafka.consumer.isolation-level' = 'read-uncommitted',
+    'key.format' = 'json-registry'
 );
 EOT
     ,
@@ -411,6 +414,7 @@ CREATE TABLE mongodb (
      key bigint,
      description STRING,
      uri STRING,
+     available_for_order boolean,
      description_embedding ARRAY<FLOAT>
 ) WITH (
       'connector' = 'mongodb',
@@ -437,14 +441,13 @@ EOT
   ,
 <<-EOT
 CREATE TABLE if not exists products_embedding (
-  `_key` BIGINT NOT NULL,
-  `key` BIGINT NOT NULL,
+  `_id` BIGINT NOT NULL,
   `uri` STRING,
   `available_for_order` BOOLEAN,
   `description` STRING,
   `description_embedding` ARRAY<FLOAT>
 )
-DISTRIBUTED by(_key)
+DISTRIBUTED by(_id)
 WITH (
   'kafka.consumer.isolation-level' = 'read-uncommitted',
   'value.format' = 'avro-registry'
@@ -457,7 +460,7 @@ CREATE TABLE if not exists vector_search_responses (
   customer_input_embeddings_ts TIMESTAMP_LTZ(3),
   `input` string,
   callback_url string,
-  `search_results` ARRAY<ROW<`key` BIGINT, `description` string, `uri` string, `description_embedding` ARRAY<FLOAT>, `score` DOUBLE>>
+  `search_results` ARRAY<ROW<`key` BIGINT, `description` string, `uri` string, available_for_order boolean, `description_embedding` ARRAY<FLOAT>, `score` DOUBLE>>
 )                                                                                                                                                              
 DISTRIBUTED by (key)
 WITH (                                                                                                                                                         
@@ -569,7 +572,7 @@ EOT
     ,
 <<-EOT
 insert into products_embedding
-SELECT key, key, uri, available_for_order, description_short || ' ' || description, response AS description_embedding
+SELECT _id, uri, available_for_order, description_short || ' ' || description, response AS description_embedding
 FROM `products`,
     LATERAL TABLE(ML_PREDICT('`text-embedding-3-large`',description))
 where description IS NOT NULL and description <> '';
@@ -641,16 +644,19 @@ with sr as(
   json_object(
     'description' value search_results[1].description,
     'uri' value search_results[1].uri,
+'available_for_order' value search_results[1].available_for_order,
     'score' value search_results[1].score
   ),
     json_object(
     'description' value search_results[2].description,
     'uri' value search_results[2].uri,
+    'available_for_order' value search_results[2].available_for_order,
     'score' value search_results[2].score
   ),
     json_object(
     'description' value search_results[3].description,
     'uri' value search_results[3].uri,
+    'available_for_order' value search_results[3].available_for_order,
     'score' value search_results[3].score
   )
 ) as search_results
@@ -664,7 +670,7 @@ with sr as(
     || cast(search_results as string) ||
     '\nIf the question is about a product, you should find the url in the metadata of each element of the context, then provide this url in your answer.
     Please also prefix all urls with "http://' || '${aws_instance.bastion.public_ip}' || '/" to make them clickable links for the user.
-If you find options from the context that are irrelevant, you shall filter it out.
+If you find options from the context that are irrelevant, you shall filter it out. If you see a field available_for_order set to false, exclude that option.
 Consider your answer will be displayed in a web browser, so format any link as HTML links  (<a>) **NOT MARKDOWN** and carriage return as <br/> HTML tags.
 Question: ' || input AS prompt
 FROM sr)
@@ -749,7 +755,8 @@ resource "confluent_connector" "mongodb_sink" {
     "database"                            = "ecommerce"
     "collection"                          = "products_embedding"
     "input.data.format"                   = "AVRO"
-    "document.id.strategy"                = "com.mongodb.kafka.connect.sink.processor.id.strategy.ProvidedInKeyStrategy"
+    "input.key.format"                    = "AVRO"
+    "doc.id.strategy"                     = "ProvidedInKeyStrategy"
     "errors.tolerance"                    = "all"
     "errors.log.enable"                   = "true"
     "errors.log.include.messages"         = "true"
@@ -773,6 +780,8 @@ resource "confluent_connector" "mongodb_sink" {
     null_resource.collection_creator
   ]
 }
+
+
 resource "confluent_connector" "http_sink" {
   environment {
     id = confluent_environment.ecommerce.id
