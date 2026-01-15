@@ -104,7 +104,6 @@ output "urls" {
 	value =<<-EOT
 Shop: 			http://${aws_instance.bastion.public_ip}
 Backend:  		http://${aws_instance.bastion.public_ip}/admin2 (demo@prestashop.com/prestashop_demo)
-AI Playground: 	http://${aws_instance.bastion.public_ip}:8001/chat/playground/
 EOT
 }
 
